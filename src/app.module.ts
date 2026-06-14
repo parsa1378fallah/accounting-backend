@@ -13,10 +13,12 @@ import { JournalModule } from './journal/journal.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PrismaModule } from './prisma/prisma.module';
+
 
 @Module({
-  imports: [AuthModule, UsersModule, RolesModule, CustomersModule, VendorsModule, InvoicesModule, PaymentsModule, AccountsModule, JournalModule, ReportsModule, SettingsModule, NotificationsModule],
+  imports: [AuthModule, UsersModule, RolesModule, CustomersModule, VendorsModule, InvoicesModule, PaymentsModule, AccountsModule, JournalModule, ReportsModule, SettingsModule, NotificationsModule, PrismaModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
