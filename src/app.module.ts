@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -14,11 +14,18 @@ import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { OrganizationMiddleware } from './common/middleware/organization.middleware';
+import { OrganizationsModule } from './organizations/organizations.module';
 
 
 @Module({
-  imports: [AuthModule, UsersModule, RolesModule, CustomersModule, VendorsModule, InvoicesModule, PaymentsModule, AccountsModule, JournalModule, ReportsModule, SettingsModule, NotificationsModule, PrismaModule],
+  imports: [AuthModule, UsersModule, RolesModule, CustomersModule, VendorsModule, InvoicesModule, PaymentsModule, AccountsModule, JournalModule, ReportsModule, SettingsModule, NotificationsModule, PrismaModule, OrganizationsModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(OrganizationMiddleware)
+      .forRoutes('*')
+  }
+}
