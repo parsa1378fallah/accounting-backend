@@ -1,9 +1,10 @@
 import { Permissions } from './../../auth/decorators/permisions.decorator';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AssignPermissionDto, CreateRoleDto, RoleFilterDto, UpdateRoleDto } from './dto';
+import { AssignPermissionDto, CreateRoleDto, RemovePermissionDto, RoleFilterDto, UpdateRoleDto } from './dto';
 import { ROLE_ERRORS } from './constants/role.constants';
 import { PERMISSION_ERRORS } from '../permissions/constants/permission.constants';
+import { ROLE_PERMISSION_ERRORS } from '../role-permissions/constants/role-permissions.constats';
 
 @Injectable()
 export class RolesService {
@@ -99,5 +100,30 @@ export class RolesService {
         })
     }
 
-    async removePermission(roleId: string,)
+    async removePermission(roleId: string, dto: RemovePermissionDto) {
+        const permissionOfRole = await this.prisma.rolePermission.findUnique({
+            where: { roleId_permissionId: { roleId, permissionId: dto.permissionId } },
+
+        })
+        if (!permissionOfRole) {
+            throw new NotFoundException(ROLE_PERMISSION_ERRORS.NOT_FOUND)
+        }
+        return this.prisma.rolePermission.delete({
+            where: {
+                roleId_permissionId: {
+                    roleId,
+                    permissionId: dto.permissionId
+                }
+            }
+        })
+    }
+
+    async getPermissions(roleId: string) {
+        return this.prisma.rolePermission.findMany({
+            where: { roleId },
+            include: {
+                permission: true
+            }
+        })
+    }
 }
