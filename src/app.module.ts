@@ -25,6 +25,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
 import { BranchesModule } from './branches/branches.module';
 import { FiscalYearModule } from './fiscal-year/fiscal-year.module';
 import { FiscalPeriodModule } from './fiscal-period/fiscal-period.module';
+import { NumberSequenceModule } from './number-sequence/number-sequence.module';
 
 
 @Module({
@@ -48,7 +49,7 @@ import { FiscalPeriodModule } from './fiscal-period/fiscal-period.module';
     , OrganizationsModule
     , BranchesModule
     , FiscalYearModule
-    , FiscalPeriodModule],
+    , FiscalPeriodModule, NumberSequenceModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -5,16 +5,12 @@ import {
 } from '@nestjs/common';
 
 import { JwtService } from '@nestjs/jwt';
-
 import * as bcrypt from 'bcrypt';
-
-import { User } from '@prisma/client';
-
 import { PrismaService } from 'src/prisma/prisma.service';
-
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AUTH_CONSTANTS } from './constants/auth.constants';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -23,12 +19,15 @@ export class AuthService {
         private readonly jwt: JwtService,
     ) { }
 
+    // =========================
+    // REGISTER
+    // =========================
     async register(dto: RegisterDto) {
-        const existingUser = await this.prisma.user.findUnique({
+        const existing = await this.prisma.user.findUnique({
             where: { email: dto.email },
         });
 
-        if (existingUser) {
+        if (existing) {
             throw new BadRequestException('Email already exists');
         }
 
@@ -49,54 +48,26 @@ export class AuthService {
         return tokens;
     }
 
+    // =========================
+    // LOGIN
+    // =========================
     async login(dto: LoginDto) {
-        const user = await this.prisma.user.findUnique({
-            where: { email: dto.email },
-            include: {
-                userRoles: {
-                    include: {
-                        role: {
-                            include: {
-                                rolePermissions: {
-                                    include: { permission: true },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
+        const user = await this.findUserByEmail(dto.email);
 
         const valid = await bcrypt.compare(dto.password, user.passwordHash);
         if (!valid) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        if (!user.isActive) {
-            throw new UnauthorizedException('User is inactive');
-        }
-
-        if (user.deletedAt) {
-            throw new UnauthorizedException('User is deleted');
-        }
-
-        const roles = user.userRoles.map((ur) => ur.role.name);
-
-
-        const permissions = user.userRoles.flatMap((ur) =>
-            ur.role.rolePermissions.map((rp) => rp.permission.key),
-        );
-
-        const tokens = await this.generateTokens(user, roles, permissions);
+        const tokens = await this.generateTokens(user);
         await this.createSession(user.id, tokens.refreshToken);
 
         return tokens;
     }
 
+    // =========================
+    // ME
+    // =========================
     async me(userId: string) {
         return this.prisma.user.findUnique({
             where: { id: userId },
@@ -112,52 +83,12 @@ export class AuthService {
         });
     }
 
-
-    private async generateTokens(
-        user: User,
-        roles: string[] = [],
-        permissions: string[] = [],
-    ) {
-        const payload: any = {
-            sub: user.id,
-            email: user.email,
-            roles,
-            permissions,
-        };
-
-        if (user.organizationId) {
-            payload.orgId = user.organizationId;
-        }
-
-        const accessToken = this.jwt.sign(payload, {
-            secret: AUTH_CONSTANTS.jwtSecret,
-            expiresIn: 60 * 15,
-        });
-
-        const refreshToken = this.jwt.sign(payload, {
-            secret: AUTH_CONSTANTS.jwtSecret,
-            expiresIn: 60 * 60 * 24,
-        });
-
-        return { accessToken, refreshToken };
-    }
-
-    private async createSession(userId: string, refreshToken: string) {
-        const tokenHash = await bcrypt.hash(refreshToken, 10);
-
-        await this.prisma.userSession.create({
-            data: {
-                userId,
-                tokenHash,
-                expiresAt: new Date(
-                    Date.now() + 30 * 24 * 60 * 60 * 1000,
-                ),
-            },
-        });
-    }
-
+    // =========================
+    // REFRESH TOKEN
+    // =========================
     async refresh(refreshToken: string) {
         let payload: any;
+
         try {
             payload = this.jwt.verify(refreshToken, {
                 secret: AUTH_CONSTANTS.jwtSecret,
@@ -175,9 +106,10 @@ export class AuthService {
             throw new UnauthorizedException('Session not found');
         }
 
-
         if (session.expiresAt < new Date()) {
-            await this.prisma.userSession.delete({ where: { id: session.id } });
+            await this.prisma.userSession.delete({
+                where: { id: session.id },
+            });
             throw new UnauthorizedException('Session expired');
         }
 
@@ -186,55 +118,31 @@ export class AuthService {
             throw new UnauthorizedException('Invalid session');
         }
 
-        const user = await this.prisma.user.findUnique({
-            where: { id: payload.sub },
-            include: {
-                userRoles: {
-                    include: {
-                        role: {
-                            include: {
-                                rolePermissions: {
-                                    include: { permission: true },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
+        const user = await this.findUserById(payload.sub);
+
+        await this.prisma.userSession.delete({
+            where: { id: session.id },
         });
 
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        if (!user.isActive || user.deletedAt) {
-            throw new UnauthorizedException('User is inactive or deleted');
-        }
-
-        const roles = user.userRoles.map((ur) => ur.role.name);
-        const permissions = user.userRoles.flatMap((ur) =>
-            ur.role.rolePermissions.map((rp) => rp.permission.key),
-        );
-
-
-        await this.prisma.userSession.delete({ where: { id: session.id } });
-        const tokens = await this.generateTokens(user, roles, permissions);
+        const tokens = await this.generateTokens(user);
         await this.createSession(user.id, tokens.refreshToken);
 
         return tokens;
     }
 
+    // =========================
+    // LOGOUT
+    // =========================
     async logout(refreshToken: string) {
         let payload: any;
+
         try {
             payload = this.jwt.verify(refreshToken, {
                 secret: AUTH_CONSTANTS.jwtSecret,
             });
         } catch {
-
             throw new UnauthorizedException('Invalid refresh token');
         }
-
 
         const sessions = await this.prisma.userSession.findMany({
             where: { userId: payload.sub },
@@ -242,10 +150,12 @@ export class AuthService {
 
         for (const session of sessions) {
             const valid = await bcrypt.compare(refreshToken, session.tokenHash);
+
             if (valid) {
                 await this.prisma.userSession.delete({
                     where: { id: session.id },
                 });
+
                 return { success: true };
             }
         }
@@ -253,8 +163,94 @@ export class AuthService {
         throw new UnauthorizedException('Session not found');
     }
 
+    // =========================
+    // LOGOUT ALL
+    // =========================
     async logoutAll(userId: string) {
-        await this.prisma.userSession.deleteMany({ where: { userId } });
+        await this.prisma.userSession.deleteMany({
+            where: { userId },
+        });
+
         return { success: true };
+    }
+
+    // =========================
+    // TOKENS (CLEAN JWT)
+    // =========================
+    private async generateTokens(user: User) {
+        const payload = {
+            sub: user.id,
+            orgId: user.organizationId ?? null,
+        };
+
+        const accessToken = this.jwt.sign(payload, {
+            secret: AUTH_CONSTANTS.jwtSecret,
+            expiresIn: '15m',
+        });
+
+        const refreshToken = this.jwt.sign(payload, {
+            secret: AUTH_CONSTANTS.jwtSecret,
+            expiresIn: '30d',
+        });
+
+        return { accessToken, refreshToken };
+    }
+
+    // =========================
+    // SESSION
+    // =========================
+    private async createSession(userId: string, refreshToken: string) {
+        const tokenHash = await bcrypt.hash(refreshToken, 10);
+
+        await this.prisma.userSession.create({
+            data: {
+                userId,
+                tokenHash,
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
+        });
+    }
+
+    // =========================
+    // HELPERS
+    // =========================
+    private async findUserByEmail(email: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        if (!user.isActive) {
+            throw new UnauthorizedException('User inactive');
+        }
+
+        if (user.deletedAt) {
+            throw new UnauthorizedException('User deleted');
+        }
+
+        return user;
+    }
+
+    private async findUserById(id: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        if (!user.isActive) {
+            throw new UnauthorizedException('User inactive');
+        }
+
+        if (user.deletedAt) {
+            throw new UnauthorizedException('User deleted');
+        }
+
+        return user;
     }
 }
