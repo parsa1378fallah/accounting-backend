@@ -53,7 +53,6 @@ model Organization {
   productionOrders    ProductionOrder[]
   reportSnapshots     ReportSnapshot[]
   attachments         Attachment[]
-  // NEW
   workflowDefinitions WorkflowDefinition[]
   workflowInstances   WorkflowInstance[]
   stockTransfers      StockTransfer[]
@@ -63,6 +62,8 @@ model Organization {
   assets              Asset[]
   assetCategories     AssetCategory[]
   budgets             Budget[]
+
+  Role Role[]
 }
 
 model Branch {
@@ -120,12 +121,31 @@ model FiscalPeriod {
 // ----------------------------------------------------------------
 
 model Role {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id String @id @default(cuid())
+
+  organizationId String?
+
+  name String
+
+  code String
+
   description String?
 
+  isSystem Boolean @default(false)
+
+  isActive Boolean @default(true)
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
   rolePermissions RolePermission[]
-  userRoles       UserRole[]
+
+  userRoles UserRole[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, code])
 }
 
 model Permission {

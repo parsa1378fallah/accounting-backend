@@ -77,7 +77,7 @@ export class JwtStrategy extends PassportStrategy(
                     },
                 },
             });
-
+        console.log(user)
         if (!user) {
             throw new UnauthorizedException(
                 'User not found',
@@ -96,11 +96,11 @@ export class JwtStrategy extends PassportStrategy(
             );
         }
 
-        if (!user.organizationId) {
-            throw new UnauthorizedException(
-                'Organization not assigned',
-            );
-        }
+        // if (!user.organizationId) {
+        //     throw new UnauthorizedException(
+        //         'Organization not assigned',
+        //     );
+        // }
 
         const roles = user.userRoles.map(
             ur => ur.role.name,

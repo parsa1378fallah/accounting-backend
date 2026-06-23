@@ -1,42 +1,91 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { RolesService } from './roles.service';
-import { AssignPermissionDto, CreateRoleDto, RemovePermissionDto, RoleFilterDto, UpdateRoleDto } from './dto';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+
+import { RolesService } from './roles.service';
+import {
+    AssignPermissionDto,
+    CreateRoleDto,
+    RemovePermissionDto,
+    RoleFilterDto,
+    UpdateRoleDto,
+} from './dto';
+
+import { CurrentOrg } from 'src/common/decorators/current-org.decorator';
+
+@ApiTags('Roles')
+@ApiBearerAuth()
 @Controller('roles')
 export class RolesController {
     constructor(private readonly rolesService: RolesService) { }
 
     @Post()
-    create(@Body() dto: CreateRoleDto) {
-        return this.rolesService.create(dto)
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.rolesService.findOne(id)
+    @ApiOperation({ summary: 'Create a new role for organization' })
+    create(
+        @CurrentOrg() orgId: string,
+        @Body() dto: CreateRoleDto,
+    ) {
+        return this.rolesService.create(orgId, dto);
     }
 
     @Get()
-    findAll(@Query('filter') filter: RoleFilterDto) {
-        return this.rolesService.findAll(filter)
+    @ApiOperation({ summary: 'Get all roles of organization' })
+    findAll(
+        @CurrentOrg() orgId: string,
+        @Query() filter: RoleFilterDto,
+    ) {
+        return this.rolesService.findAll(orgId, filter);
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get role by id' })
+    findOne(
+        @CurrentOrg() orgId: string,
+        @Param('id') id: string,
+    ) {
+        return this.rolesService.findOne(orgId, id);
     }
 
     @Patch(':id')
-    update(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
-        return this.rolesService.update(id, dto)
+    @ApiOperation({ summary: 'Update role' })
+    update(
+        @CurrentOrg() orgId: string,
+        @Param('id') id: string,
+        @Body() dto: UpdateRoleDto,
+    ) {
+        return this.rolesService.update(orgId, id, dto);
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.rolesService.remove(id)
+    @ApiOperation({ summary: 'Delete role' })
+    remove(
+        @CurrentOrg() orgId: string,
+        @Param('id') id: string,
+    ) {
+        return this.rolesService.remove(orgId, id);
     }
 
     @Post(':roleId/permissions')
-    assignPermission(@Param('roleId') roleId: string, @Body() dto: AssignPermissionDto) {
-        return this.assignPermission(roleId, dto)
+    @ApiOperation({ summary: 'Assign permission to role' })
+    assignPermission(
+        @Param('roleId') roleId: string,
+        @Body() dto: AssignPermissionDto,
+    ) {
+        return this.rolesService.assignPermission(roleId, dto);
     }
+
     @Delete(':roleId/permissions')
-    async removePermission(
+    @ApiOperation({ summary: 'Remove permission from role' })
+    removePermission(
         @Param('roleId') roleId: string,
         @Body() dto: RemovePermissionDto,
     ) {
@@ -44,8 +93,8 @@ export class RolesController {
     }
 
     @Get(':roleId/permissions')
-    async getPermissions(@Param('roleId') roleId: string) {
+    @ApiOperation({ summary: 'Get all permissions of a role' })
+    getPermissions(@Param('roleId') roleId: string) {
         return this.rolesService.getPermissions(roleId);
     }
-
 }

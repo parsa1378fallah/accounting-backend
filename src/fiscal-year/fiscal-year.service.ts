@@ -1,130 +1,220 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateFiscalYearDto } from './dto';
-import { UpdateFiscalaYearDto } from './dto/update-fiscal-year.dto';
+
+import {
+    CreateFiscalYearDto,
+    UpdateFiscalYearDto,
+} from './dto';
+
+import { FISCAL_YEAR_ERRORS } from './constants/fiscal-year.constants';
 
 @Injectable()
 export class FiscalYearService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) { }
 
-    async create(orgId: string, dto: CreateFiscalYearDto) {
-        const startAt = dto.startAt;
-        const endAt = dto.endAt;
-        if (startAt >= endAt) {
-            throw new BadRequestException("End date must be greater than start date")
-        }
+    /* ============================================================
+        CREATE
+    ============================================================ */
 
-        const overlap = await this.prisma.fiscalYear.findFirst({
-            where: {
-                organizationId: orgId,
-                startAt: {
-                    lte: endAt
-                },
-                endAt: {
-                    gte: startAt
-                }
-            }
-        })
+    async create(organizationId: string, dto: CreateFiscalYearDto) {
+        this.validateDateRange(dto.startAt, dto.endAt);
 
-        if (overlap) {
-            throw new BadRequestException("fiscal year overlaps with existing fiscal year")
-        }
-        return await this.prisma.fiscalYear.create({
+        await this.ensureNoOverlap(
+            organizationId,
+            dto.startAt,
+            dto.endAt,
+        );
+
+        return this.prisma.fiscalYear.create({
             data: {
-                organizationId: orgId,
-                name: dto.name,
-                startAt,
-                endAt
-            }
-        })
-    }
-
-    async findAll(orgId: string) {
-        return this.prisma.fiscalYear.findMany({
-            where: { organizationId: orgId },
-            include: {
-                periods: true
+                organizationId,
+                ...dto,
             },
-            orderBy: { startAt: 'desc' }
-        })
+        });
     }
-    async findOne(orgId: string, id: string) {
-        const fiscalYear = await this.prisma.fiscalYear.findFirst({
-            where: { id, organizationId: orgId },
-            include: {
-                periods: true,
-                closing: true
-            }
-        })
-        if (!fiscalYear) {
-            throw new NotFoundException('fiscal year not found')
-        }
-        return fiscalYear
+
+    /* ============================================================
+        READ
+    ============================================================ */
+
+    async findAll(organizationId: string) {
+        return this.prisma.fiscalYear.findMany({
+            where: { organizationId },
+            include: { periods: true },
+            orderBy: { startAt: 'desc' },
+        });
     }
-    async update(orgId: string, id: string, dto: UpdateFiscalaYearDto) {
-        const fiscalYear = await this.findOne(orgId, id);
-        if (fiscalYear.isClosed) {
-            throw new BadRequestException('Fiscal year is closed')
-        }
-        const startAt = dto.startAt ? new Date(dto.startAt) : fiscalYear.startAt;
-        const endAt = dto.endAt ? new Date(dto.endAt) : fiscalYear.endAt
 
-        if (startAt >= endAt) {
-            throw new BadRequestException("Invalid date range")
-        }
+    async findOne(organizationId: string, id: string) {
+        return this.getFiscalYearOrThrow(organizationId, id);
+    }
 
-        const overlap = await this.prisma.fiscalYear.findFirst({
+    async findActive(organizationId: string) {
+        return this.prisma.fiscalYear.findFirst({
             where: {
-                organizationId: orgId,
-                id: {
-                    not: id
-                },
-                startAt: { lte: endAt },
-                endAt: { gte: startAt }
-            }
+                organizationId,
+                isClosed: false,
+            },
+            orderBy: { startAt: 'desc' },
+        });
+    }
 
-        })
-        if (overlap) {
-            throw new BadRequestException('fiscal year overlaps with existing fiscal year')
-        }
+    /* ============================================================
+        UPDATE
+    ============================================================ */
+
+    async update(
+        organizationId: string,
+        id: string,
+        dto: UpdateFiscalYearDto,
+    ) {
+        const fiscalYear = await this.getFiscalYearOrThrow(
+            organizationId,
+            id,
+        );
+
+        this.ensureNotClosed(fiscalYear);
+
+        const startAt = dto.startAt ?? fiscalYear.startAt;
+        const endAt = dto.endAt ?? fiscalYear.endAt;
+
+        this.validateDateRange(startAt, endAt);
+
+        await this.ensureNoOverlap(
+            organizationId,
+            startAt,
+            endAt,
+            id,
+        );
 
         return this.prisma.fiscalYear.update({
             where: { id },
             data: {
                 ...dto,
                 startAt,
-                endAt
-            }
-        })
+                endAt,
+            },
+        });
     }
-    async close(orgId: string, id: string) {
-        const fiscalYear = await this.findOne(orgId, id)
+
+    /* ============================================================
+        CLOSE
+    ============================================================ */
+
+    async close(organizationId: string, id: string) {
+        const fiscalYear = await this.getFiscalYearOrThrow(
+            organizationId,
+            id,
+        );
+
         if (fiscalYear.isClosed) {
-            throw new BadRequestException('fiscal year is already closed')
+            throw new BadRequestException(
+                FISCAL_YEAR_ERRORS.ALREADY_CLOSED,
+            );
         }
-        const openPeriods = fiscalYear.periods.filter(p => !p.isClosed)
-        if (openPeriods.length > 0) {
-            throw new BadRequestException('all periods must be closed first')
+
+        const hasOpenPeriods = fiscalYear.periods.some(
+            (p) => !p.isClosed,
+        );
+
+        if (hasOpenPeriods) {
+            throw new BadRequestException(
+                FISCAL_YEAR_ERRORS.OPEN_PERIOD_EXISTS,
+            );
         }
+
         return this.prisma.fiscalYear.update({
             where: { id },
-            data: { isClosed: true }
-        })
+            data: { isClosed: true },
+        });
     }
-    async reopen(orgId: string, id: string) {
-        const fiscalYear = await this.findOne(orgId, id)
-        if (!fiscalYear.closing) {
-            throw new BadRequestException('fiscal year is already open')
+
+    /* ============================================================
+        REOPEN
+    ============================================================ */
+
+    async reopen(organizationId: string, id: string) {
+        const fiscalYear = await this.getFiscalYearOrThrow(
+            organizationId,
+            id,
+        );
+
+        if (!fiscalYear.isClosed) {
+            throw new BadRequestException(
+                FISCAL_YEAR_ERRORS.ALREADY_OPEN,
+            );
         }
+
         return this.prisma.fiscalYear.update({
             where: { id },
-            data: { isClosed: false }
-        })
+            data: { isClosed: false },
+        });
     }
-    async findActive(orgId: string) {
-        return this.prisma.fiscalYear.findFirst({
-            where: { organizationId: orgId, isClosed: false },
-            orderBy: { startAt: 'desc' }
-        })
+
+    /* ============================================================
+        HELPERS
+    ============================================================ */
+
+    private async getFiscalYearOrThrow(
+        organizationId: string,
+        id: string,
+    ) {
+        const fiscalYear = await this.prisma.fiscalYear.findFirst({
+            where: { id, organizationId },
+            include: { periods: true, closing: true },
+        });
+
+        if (!fiscalYear) {
+            throw new NotFoundException(
+                FISCAL_YEAR_ERRORS.NOT_FOUND,
+            );
+        }
+
+        return fiscalYear;
+    }
+
+    private validateDateRange(startAt: Date, endAt: Date) {
+        if (startAt >= endAt) {
+            throw new BadRequestException(
+                FISCAL_YEAR_ERRORS.INVALID_DATE_RANGE,
+            );
+        }
+    }
+
+    private async ensureNoOverlap(
+        organizationId: string,
+        startAt: Date,
+        endAt: Date,
+        excludeId?: string,
+    ) {
+        const overlap = await this.prisma.fiscalYear.findFirst({
+            where: {
+                organizationId,
+                ...(excludeId && {
+                    id: { not: excludeId },
+                }),
+                startAt: { lte: endAt },
+                endAt: { gte: startAt },
+            },
+        });
+
+        if (overlap) {
+            throw new BadRequestException(
+                FISCAL_YEAR_ERRORS.OVERLAP,
+            );
+        }
+    }
+
+    private ensureNotClosed(fiscalYear: { isClosed: boolean }) {
+        if (fiscalYear.isClosed) {
+            throw new BadRequestException(
+                FISCAL_YEAR_ERRORS.ALREADY_CLOSED,
+            );
+        }
     }
 }

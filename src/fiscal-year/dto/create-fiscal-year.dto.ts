@@ -1,17 +1,16 @@
-import {
-    IsDateString,
-    IsString,
-    MaxLength,
-} from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsString, MaxLength } from 'class-validator';
 
 export class CreateFiscalYearDto {
     @IsString()
     @MaxLength(100)
     name: string;
 
-    @IsDateString()
-    startAt: string;
+    @Type(() => Date)
+    @IsDate()
+    startAt: Date;
 
-    @IsDateString()
-    endAt: string;
+    @Type(() => Date)
+    @IsDate()
+    endAt: Date;
 }

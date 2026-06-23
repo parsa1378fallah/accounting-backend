@@ -1,60 +1,157 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateBranchDto } from './dro';
-import { UpdateBrachDto } from './dro/update-branch.dto';
+
+import { CreateBranchDto } from './dto/create-branch.dto';
+import { UpdateBrachDto } from './dto/update-branch.dto';
 
 @Injectable()
 export class BranchesService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+    ) { }
 
-    async create(orgId: string, dto: CreateBranchDto) {
-        const exists = await this.prisma.branch.findFirst({
-            where: { organizationId: orgId, code: dto.code }
-        })
-        if (exists) {
-            throw new BadRequestException('Branch code already exists')
-        }
-        return await this.prisma.branch.create({
+    /* ============================================================
+        CREATE
+    ============================================================ */
+
+    async create(
+        organizationId: string,
+        dto: CreateBranchDto,
+    ) {
+        await this.ensureCodeUnique(
+            organizationId,
+            dto.code,
+        );
+
+        return this.prisma.branch.create({
             data: {
                 ...dto,
-                organizationId: orgId
-            }
-        })
+                organizationId,
+                isActive: true,
+            },
+        });
     }
 
-    async findAll(orgId: string) {
-        return await this.prisma.branch.findMany({
-            where: { organizationId: orgId },
-            orderBy: { createdAt: 'desc' }
-        })
+    /* ============================================================
+        FIND ALL
+    ============================================================ */
+
+    async findAll(organizationId: string) {
+        return this.prisma.branch.findMany({
+            where: {
+                organizationId,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
     }
 
+    /* ============================================================
+        FIND ONE
+    ============================================================ */
 
-    async findOne(orgId: string, id: string) {
-        const branch = await this.prisma.branch.findFirst({
-            where: { id, organizationId: orgId }
-        })
+    async findOne(
+        organizationId: string,
+        id: string,
+    ) {
+        const branch =
+            await this.prisma.branch.findFirst({
+                where: {
+                    id,
+                    organizationId,
+                },
+            });
 
         if (!branch) {
-            throw new NotFoundException('Branch not found')
+            throw new NotFoundException(
+                'BRANCH_NOT_FOUND',
+            );
         }
 
-        return branch
-    }
-    async update(orgId: string, id: string, dto: UpdateBrachDto) {
-        await this.findOne(orgId, id)
-        return await this.prisma.branch.update({
-            where: { id },
-            data: { ...dto }
-        })
+        return branch;
     }
 
-    async remove(orgId: string, id: string) {
-        await this.prisma.branch.update({
+    /* ============================================================
+        UPDATE
+    ============================================================ */
+
+    async update(
+        organizationId: string,
+        id: string,
+        dto: UpdateBrachDto,
+    ) {
+        const branch = await this.findOne(
+            organizationId,
+            id,
+        );
+
+        if (dto.code && dto.code !== branch.code) {
+            await this.ensureCodeUnique(
+                organizationId,
+                dto.code,
+                id,
+            );
+        }
+
+        return this.prisma.branch.update({
             where: { id },
             data: {
-                isActive: false
-            }
-        })
+                ...dto,
+            },
+        });
+    }
+
+    /* ============================================================
+        REMOVE (SOFT DELETE)
+    ============================================================ */
+
+    async remove(
+        organizationId: string,
+        id: string,
+    ) {
+        await this.findOne(organizationId, id);
+
+        return this.prisma.branch.update({
+            where: { id },
+            data: {
+                isActive: false,
+            },
+        });
+    }
+
+    /* ============================================================
+        BUSINESS RULES
+    ============================================================ */
+
+    private async ensureCodeUnique(
+        organizationId: string,
+        code: string,
+        excludeId?: string,
+    ) {
+        const exists =
+            await this.prisma.branch.findFirst({
+                where: {
+                    organizationId,
+                    code,
+
+                    ...(excludeId && {
+                        id: {
+                            not: excludeId,
+                        },
+                    }),
+                },
+            });
+
+        if (exists) {
+            throw new BadRequestException(
+                'BRANCH_CODE_ALREADY_EXISTS',
+            );
+        }
     }
 }

@@ -1,40 +1,105 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UseGuards,
+} from '@nestjs/common';
+
+import {
+    ApiTags,
+    ApiOperation,
+    ApiParam,
+    ApiBody,
+    ApiBearerAuth,
+} from '@nestjs/swagger';
+
 import { BranchesService } from './branches.service';
+
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentOrg } from 'src/common/decorators/current-org.decorator';
-import { CreateBranchDto } from './dro';
-import { UpdateBrachDto } from './dro/update-branch.dto';
 
-@Controller('branches')
+import { CreateBranchDto } from './dto/create-branch.dto';
+import { UpdateBrachDto } from './dto/update-branch.dto';
+
+@ApiTags('Branches')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+@Controller('branches')
 export class BranchesController {
-    constructor(private branchService: BranchesService) { }
+    constructor(
+        private readonly branchService: BranchesService,
+    ) { }
 
+    /* ============================================================
+        CREATE
+    ============================================================ */
     @Post()
-    create(@CurrentOrg() orgId: string, @Body() dto: CreateBranchDto) {
-        return this.branchService.create(orgId, dto)
+    @ApiOperation({ summary: 'Create a new branch' })
+    @ApiBody({ type: CreateBranchDto })
+    create(
+        @CurrentOrg() orgId: string,
+        @Body() dto: CreateBranchDto,
+    ) {
+        return this.branchService.create(
+            orgId,
+            dto,
+        );
     }
 
-
+    /* ============================================================
+        FIND ALL
+    ============================================================ */
     @Get()
+    @ApiOperation({ summary: 'Get all branches' })
     findAll(@CurrentOrg() orgId: string) {
-        return this.branchService.findAll(orgId)
+        return this.branchService.findAll(orgId);
     }
 
+    /* ============================================================
+        FIND ONE
+    ============================================================ */
     @Get(':id')
-    findOne(@CurrentOrg() orgId: string, @Param('id') id: string) {
-        return this.branchService.findOne(orgId, id)
+    @ApiOperation({ summary: 'Get branch by id' })
+    @ApiParam({ name: 'id', description: 'Branch ID' })
+    findOne(
+        @CurrentOrg() orgId: string,
+        @Param('id') id: string,
+    ) {
+        return this.branchService.findOne(
+            orgId,
+            id,
+        );
     }
 
+    /* ============================================================
+        UPDATE
+    ============================================================ */
     @Patch(':id')
+    @ApiOperation({ summary: 'Update branch' })
+    @ApiParam({ name: 'id' })
+    @ApiBody({ type: UpdateBrachDto })
     update(
         @CurrentOrg() orgId: string,
         @Param('id') id: string,
-        @Body() dto: UpdateBrachDto
+        @Body() dto: UpdateBrachDto,
     ) {
-        return this.branchService.update(orgId, id, dto)
+        return this.branchService.update(
+            orgId,
+            id,
+            dto,
+        );
     }
+
+    /* ============================================================
+        DELETE (SOFT DELETE)
+    ============================================================ */
     @Delete(':id')
+    @ApiOperation({ summary: 'Deactivate branch (soft delete)' })
+    @ApiParam({ name: 'id' })
     remove(
         @CurrentOrg() orgId: string,
         @Param('id') id: string,
