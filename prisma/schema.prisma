@@ -238,17 +238,22 @@ model NumberSequence {
 // ================================================================
 
 model Currency {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  name      String
-  symbol    String
-  isBase    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id String @id @default(cuid())
+
+  code   String  @unique
+  name   String
+  symbol String?
+
+  isBase        Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  decimalPlaces Int       @default(2)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
 
   exchangeRates     ExchangeRate[]
   journalEntryLines JournalEntryLine[]
   fxGainLossLines   FxGainLossEntry[]
-  // FIX: اضافه شد
   priceLists        PriceList[]
 }
 

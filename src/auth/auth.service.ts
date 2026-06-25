@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AUTH_CONSTANTS } from './constants/auth.constants';
 import { User } from '@prisma/client';
+import { RoleCode } from 'prisma/seeds/roles.seed';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +25,9 @@ export class AuthService {
     // =========================
     async register(dto: RegisterDto) {
         const existing = await this.prisma.user.findUnique({
-            where: { email: dto.email },
+            where: {
+                email: dto.email,
+            },
         });
 
         if (existing) {
@@ -33,16 +36,68 @@ export class AuthService {
 
         const passwordHash = await bcrypt.hash(dto.password, 10);
 
-        const user = await this.prisma.user.create({
-            data: {
-                email: dto.email,
-                firstName: dto.firstName,
-                lastName: dto.lastName,
-                passwordHash,
-            },
+        const user = await this.prisma.$transaction(async (tx) => {
+            // -----------------------------------------
+            // Create Organization
+            // -----------------------------------------
+            const organization = await tx.organization.create({
+                data: {
+                    name: dto.organizationName,
+                    legalName: dto.legalName,
+                    nationalId: dto.nationalId,
+                    taxNumber: dto.taxNumber,
+                    phone: dto.phone,
+                    email: dto.organizationEmail,
+                    address: dto.address,
+                },
+            });
+
+            // -----------------------------------------
+            // Create User
+            // -----------------------------------------
+            const createdUser = await tx.user.create({
+                data: {
+                    email: dto.email,
+                    firstName: dto.firstName,
+                    lastName: dto.lastName,
+                    passwordHash,
+                    organizationId: organization.id,
+                },
+            });
+
+            // -----------------------------------------
+            // Find OWNER Role
+            // -----------------------------------------
+            const ownerRole = await tx.role.findFirst({
+                where: {
+                    code: RoleCode.OWNER,
+                    isSystem: true,
+                    isActive: true,
+                },
+            });
+
+            if (!ownerRole) {
+                throw new BadRequestException(
+                    'System OWNER role was not found.',
+                );
+            }
+
+            // -----------------------------------------
+            // Assign OWNER Role
+            // -----------------------------------------
+            await tx.userRole.create({
+                data: {
+                    userId: createdUser.id,
+                    roleId: ownerRole.id,
+                    organizationId: organization.id,
+                },
+            });
+
+            return createdUser;
         });
 
         const tokens = await this.generateTokens(user);
+
         await this.createSession(user.id, tokens.refreshToken);
 
         return tokens;

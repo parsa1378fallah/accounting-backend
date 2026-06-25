@@ -44,7 +44,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Post()
-    @Permissions('organization:create')
+    // @Permissions('organization:create')
     @ApiOperation({ summary: 'Create organization' })
     create(@Body() dto: CreateOrganizationDto) {
         return this.organizationService.create(dto);
@@ -55,7 +55,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Get()
-    @Permissions('organization:read')
+    // @Permissions('organization:read')
     @ApiOperation({ summary: 'Get all organizations' })
     findAll(@Query() query: OrganizationQueryDto) {
         return this.organizationService.findAll(query);
@@ -66,7 +66,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Get('summary')
-    @Permissions('organization:summary')
+    // @Permissions('organization:summary')
     @ApiOperation({
         summary: 'Get organizations summary',
     })
@@ -79,7 +79,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Get(':id')
-    @Permissions('organization:read')
+    // @Permissions('organization:read')
     @ApiOperation({ summary: 'Get organization by id' })
     findOne(@Param('id') id: string) {
         return this.organizationService.findOne(id);
@@ -90,7 +90,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Patch(':id')
-    @Permissions('organization:update')
+    // @Permissions('organization:update')
     @ApiOperation({ summary: 'Update organization' })
     update(
         @Param('id') id: string,
@@ -104,7 +104,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Delete(':id')
-    @Permissions('organization:delete')
+    // @Permissions('organization:delete')
     @ApiOperation({ summary: 'Delete organization' })
     remove(@Param('id') id: string) {
         return this.organizationService.remove(id);
@@ -115,7 +115,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Patch(':id/restore')
-    @Permissions('organization:restore')
+    // @Permissions('organization:restore')
     @ApiOperation({ summary: 'Restore organization' })
     restore(@Param('id') id: string) {
         return this.organizationService.restore(id);
@@ -126,7 +126,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Patch(':id/activate')
-    @Permissions('organization:activate')
+    // @Permissions('organization:activate')
     @ApiOperation({ summary: 'Activate organization' })
     activate(@Param('id') id: string) {
         return this.organizationService.activate(id);
@@ -137,7 +137,7 @@ export class OrganizationsController {
     // ============================================================
 
     @Patch(':id/deactivate')
-    @Permissions('organization:activate')
+    // @Permissions('organization:activate')
     @ApiOperation({
         summary: 'Deactivate organization',
     })

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `currency` ADD COLUMN `decimalPlaces` INTEGER NOT NULL DEFAULT 2;

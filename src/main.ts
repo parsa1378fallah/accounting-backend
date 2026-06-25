@@ -1,9 +1,11 @@
+import { ResponseInterceptor } from './common/interceptor/response.interceptores';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-
+import { AllExceptionFilter } from './common/filters/all-exexption.filter';
+import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -20,9 +22,25 @@ async function bootstrap() {
       whitelist: true, // remove unknown fields
       transform: true, // auto transform DTO types
       forbidNonWhitelisted: true, // throw error for unknown fields
+      transformOptions: {
+        enableImplicitConversion: true
+      },
+      forbidUnknownValues: true,
+      stopAtFirstError: true,
+      validationError: {
+        target: false,
+        value: false
+      }
     }),
   );
 
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(),
+    app.get(LoggingInterceptor)
+  )
+  app.useGlobalFilters(
+    new AllExceptionFilter()
+  )
   // ==============================
   // Swagger Config
   // ==============================
