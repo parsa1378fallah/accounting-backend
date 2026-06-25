@@ -32,6 +32,14 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { RequestContextModule } from './common/observability/request-context/request-context.module';
 import { LoggerModule } from './common/observability/logger/logger.module';
 import { ObservabilityModule } from './common/observability/observability.module';
+import { ExchangeRatesModule } from './accounting/exchange-rates/exchange-rates.module';
+import { ChartOfAccountsModule } from './accounting/chart-of-accounts/chart-of-accounts.module';
+import { CostCentersModule } from './accounting/cost-centers/cost-centers.module';
+import { BankAccountsModule } from './accounting/bank-accounts/bank-accounts.module';
+import { CashboxesModule } from './accounting/cashboxes/cashboxes.module';
+import { JournalEntriesModule } from './accounting/journal-entries/journal-entries.module';
+import { JournalLinesModule } from './accounting/journal-lines/journal-lines.module';
+import { ChartOfAccountsModule } from './chart-of-accounts/chart-of-accounts.module';
 
 
 @Module({
@@ -54,7 +62,7 @@ import { ObservabilityModule } from './common/observability/observability.module
     , OrganizationsModule
     , BranchesModule
     , FiscalYearModule
-    , FiscalPeriodModule, NumberSequenceModule, CurrencyModule, RequestContextModule, ObservabilityModule],
+    , FiscalPeriodModule, NumberSequenceModule, CurrencyModule, RequestContextModule, ObservabilityModule, ExchangeRatesModule, ChartOfAccountsModule, CostCentersModule, BankAccountsModule, CashboxesModule, JournalEntriesModule, JournalLinesModule],
   controllers: [AppController],
   providers: [AppService, LoggingInterceptor],
 })
