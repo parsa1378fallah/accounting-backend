@@ -39,7 +39,10 @@ import { BankAccountsModule } from './accounting/bank-accounts/bank-accounts.mod
 import { CashboxesModule } from './accounting/cashboxes/cashboxes.module';
 import { JournalEntriesModule } from './accounting/journal-entries/journal-entries.module';
 import { JournalLinesModule } from './accounting/journal-lines/journal-lines.module';
-import { ChartOfAccountsModule } from './chart-of-accounts/chart-of-accounts.module';
+import { AccountsModule } from './accounting/accounts/accounts.module';
+import { AccountGroupModule } from './accounting/account-group/account-group.module';
+import { AccountCategoryModule } from './accounting/account-category/account-category.module';
+
 
 
 @Module({
@@ -62,7 +65,7 @@ import { ChartOfAccountsModule } from './chart-of-accounts/chart-of-accounts.mod
     , OrganizationsModule
     , BranchesModule
     , FiscalYearModule
-    , FiscalPeriodModule, NumberSequenceModule, CurrencyModule, RequestContextModule, ObservabilityModule, ExchangeRatesModule, ChartOfAccountsModule, CostCentersModule, BankAccountsModule, CashboxesModule, JournalEntriesModule, JournalLinesModule],
+    , FiscalPeriodModule, NumberSequenceModule, CurrencyModule, RequestContextModule, ObservabilityModule, ExchangeRatesModule, ChartOfAccountsModule, CostCentersModule, BankAccountsModule, CashboxesModule, JournalEntriesModule, JournalLinesModule, AccountsModule, AccountGroupModule, AccountCategoryModule],
   controllers: [AppController],
   providers: [AppService, LoggingInterceptor],
 })

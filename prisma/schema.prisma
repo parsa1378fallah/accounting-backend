@@ -541,10 +541,20 @@ model JournalApproval {
 }
 
 model SystemAccount {
-  id             String @id @default(cuid())
+  id String @id @default(cuid())
+
   organizationId String
-  key            String
-  accountId      String
+
+  key  String
+  name String
+
+  accountId String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   organization Organization @relation(fields: [organizationId], references: [id])
   account      Account      @relation(fields: [accountId], references: [id])
