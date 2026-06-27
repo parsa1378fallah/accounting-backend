@@ -10,7 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AUTH_CONSTANTS } from './constants/auth.constants';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { RoleCode } from 'prisma/seeds/roles.seed';
 
 @Injectable()
@@ -40,8 +40,11 @@ export class AuthService {
             // -----------------------------------------
             // Create Organization
             // -----------------------------------------
+            const organizationCode = await this.generateOrganizationCode(tx);
             const organization = await tx.organization.create({
+
                 data: {
+                    code: organizationCode,
                     name: dto.organizationName,
                     legalName: dto.legalName,
                     nationalId: dto.nationalId,
@@ -307,5 +310,13 @@ export class AuthService {
         }
 
         return user;
+    }
+    private async generateOrganizationCode(
+        tx: Prisma.TransactionClient,
+    ): Promise<string> {
+
+        const count = await tx.organization.count();
+
+        return `ORG${String(count + 1).padStart(5, '0')}`;
     }
 }

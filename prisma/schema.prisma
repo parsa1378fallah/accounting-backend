@@ -14,6 +14,7 @@ datasource db {
 model Organization {
   id         String  @id @default(cuid())
   name       String
+  code       String  @unique
   legalName  String?
   nationalId String?
   taxNumber  String?
@@ -64,6 +65,8 @@ model Organization {
   budgets             Budget[]
 
   Role Role[]
+
+  FxGainLossEntry FxGainLossEntry[]
 }
 
 model Branch {
@@ -244,46 +247,111 @@ model Currency {
   name   String
   symbol String?
 
-  isBase        Boolean   @default(false)
-  isActive      Boolean   @default(true)
-  decimalPlaces Int       @default(2)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  isBase        Boolean @default(false)
+  isActive      Boolean @default(true)
+  decimalPlaces Int     @default(2)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   exchangeRates     ExchangeRate[]
   journalEntryLines JournalEntryLine[]
-  fxGainLossLines   FxGainLossEntry[]
   priceLists        PriceList[]
+
+  fxSourceEntries FxGainLossEntry[] @relation("FxSourceCurrency")
+
+  fxBaseEntries FxGainLossEntry[] @relation("FxBaseCurrency")
+}
+
+enum ExchangeRateStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
 }
 
 model ExchangeRate {
-  id            String   @id @default(cuid())
-  currencyId    String
-  rate          Decimal  @db.Decimal(18, 6)
+  id String @id @default(cuid())
+
+  organizationId String
+
+  currencyId String
+  rate       Decimal @db.Decimal(18, 6)
+
   effectiveDate DateTime
-  source        String? // MANUAL, API, CBR ...
+
+  source String?
+  status ExchangeRateStatus @default(ACTIVE)
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+
+  version Int @default(1)
 
   currency Currency @relation(fields: [currencyId], references: [id])
 
   @@unique([currencyId, effectiveDate])
   @@index([currencyId, effectiveDate])
+  @@index([currencyId, organizationId])
+}
+
+enum FxEntryType {
+  REALIZED
+  UNREALIZED
+}
+
+enum FxDirection {
+  GAIN
+  LOSS
 }
 
 model FxGainLossEntry {
-  id             String   @id @default(cuid())
-  organizationId String
-  currencyId     String
-  journalEntryId String
-  amount         Decimal  @db.Decimal(20, 4)
-  referenceType  String?
-  referenceId    String?
-  createdAt      DateTime @default(now())
+  id String @id @default(cuid())
 
-  currency     Currency     @relation(fields: [currencyId], references: [id])
+  organizationId String
+
+  journalEntryId String
+
+  currencyId String
+
+  baseCurrencyId String
+
+  entryType FxEntryType
+
+  direction FxDirection
+
+  amount Decimal @db.Decimal(20, 4)
+
+  exchangeRate Decimal @db.Decimal(20, 8)
+
+  sourceAmount Decimal @db.Decimal(20, 4)
+
+  referenceType String?
+  referenceId   String?
+
+  description String?
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id])
 
+  currency Currency @relation("FxSourceCurrency", fields: [currencyId], references: [id])
+
+  baseCurrency Currency @relation("FxBaseCurrency", fields: [baseCurrencyId], references: [id])
+
   @@index([organizationId])
+  @@index([journalEntryId])
+  @@index([currencyId])
+  @@index([baseCurrencyId])
+  @@index([entryType])
+  @@index([direction])
+  @@index([createdAt])
+  @@index([referenceType, referenceId])
 }
 
 enum AccountNature {
@@ -540,12 +608,40 @@ model JournalApproval {
   approver     User         @relation(fields: [approverId], references: [id])
 }
 
+enum SystemAccountKey {
+  CASH
+  PETTY_CASH
+
+  BANK
+
+  ACCOUNTS_RECEIVABLE
+  ACCOUNTS_PAYABLE
+
+  SALES
+  SALES_RETURN
+
+  PURCHASE
+  PURCHASE_RETURN
+
+  INVENTORY
+  TAX_PAYABLE
+  TAX_RECEIVABLE
+
+  DISCOUNT_GIVEN
+  DISCOUNT_RECEIVED
+
+  EXCHANGE_GAIN
+  EXCHANGE_LOSS
+
+  RETAINED_EARNINGS
+}
+
 model SystemAccount {
   id String @id @default(cuid())
 
   organizationId String
 
-  key  String
+  key  SystemAccountKey
   name String
 
   accountId String

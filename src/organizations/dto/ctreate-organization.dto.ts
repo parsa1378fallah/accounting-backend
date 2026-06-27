@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
     IsString,
     IsOptional,
@@ -37,4 +38,7 @@ export class CreateOrganizationDto {
     @IsOptional()
     @IsString()
     address?: string;
+
+
+
 }

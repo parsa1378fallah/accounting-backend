@@ -1,3 +1,4 @@
+import { JournalModule } from './accounting/journal/journal.module';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { RequestContextMiddleware } from './common/observability/middleware/request-context.middleware';
 import {
@@ -16,7 +17,6 @@ import { CustomersModule } from './customers/customers.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentsModule } from './payments/payments.module';
-import { JournalModule } from './journal/journal.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -30,18 +30,18 @@ import { NumberSequenceModule } from './number-sequence/number-sequence.module';
 import { CurrencyModule } from './accounting/currency/currency.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { RequestContextModule } from './common/observability/request-context/request-context.module';
-import { LoggerModule } from './common/observability/logger/logger.module';
 import { ObservabilityModule } from './common/observability/observability.module';
 import { ExchangeRatesModule } from './accounting/exchange-rates/exchange-rates.module';
 import { ChartOfAccountsModule } from './accounting/chart-of-accounts/chart-of-accounts.module';
 import { CostCentersModule } from './accounting/cost-centers/cost-centers.module';
 import { BankAccountsModule } from './accounting/bank-accounts/bank-accounts.module';
 import { CashboxesModule } from './accounting/cashboxes/cashboxes.module';
-import { JournalEntriesModule } from './accounting/journal-entries/journal-entries.module';
-import { JournalLinesModule } from './accounting/journal-lines/journal-lines.module';
 import { AccountsModule } from './accounting/accounts/accounts.module';
 import { AccountGroupModule } from './accounting/account-group/account-group.module';
 import { AccountCategoryModule } from './accounting/account-category/account-category.module';
+import { SystemAccountModule } from './accounting/system-account/system-account.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { FxGainLossModule } from './accounting/fx-gain-loss/fx-gain-loss.module';
 
 
 
@@ -57,7 +57,6 @@ import { AccountCategoryModule } from './accounting/account-category/account-cat
     , VendorsModule
     , InvoicesModule
     , PaymentsModule
-    , JournalModule
     , ReportsModule
     , SettingsModule
     , NotificationsModule
@@ -65,9 +64,26 @@ import { AccountCategoryModule } from './accounting/account-category/account-cat
     , OrganizationsModule
     , BranchesModule
     , FiscalYearModule
-    , FiscalPeriodModule, NumberSequenceModule, CurrencyModule, RequestContextModule, ObservabilityModule, ExchangeRatesModule, ChartOfAccountsModule, CostCentersModule, BankAccountsModule, CashboxesModule, JournalEntriesModule, JournalLinesModule, AccountsModule, AccountGroupModule, AccountCategoryModule],
+    , FiscalPeriodModule
+    , NumberSequenceModule
+    , CurrencyModule
+    , RequestContextModule
+    , ObservabilityModule
+    , ExchangeRatesModule
+    , ChartOfAccountsModule
+    , CostCentersModule
+    , BankAccountsModule
+    , CashboxesModule
+    , AccountsModule
+    , AccountGroupModule
+    , AccountCategoryModule
+    , SystemAccountModule
+    , JournalModule,
+    EventEmitterModule.forRoot(),
+    FxGainLossModule,],
   controllers: [AppController],
-  providers: [AppService, LoggingInterceptor],
+  providers: [AppService
+    , LoggingInterceptor],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

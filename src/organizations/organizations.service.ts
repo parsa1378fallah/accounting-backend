@@ -26,8 +26,21 @@ export class OrganizationsService {
     async create(dto: CreateOrganizationDto) {
         await this.checkDuplicate(dto);
 
+        const organizationCode =
+            await this.generateOrganizationCode();
+
         return this.prisma.organization.create({
-            data: dto,
+            data: {
+                code: organizationCode,
+
+                name: dto.name,
+                legalName: dto.legalName,
+                nationalId: dto.nationalId,
+                taxNumber: dto.taxNumber,
+                phone: dto.phone,
+                email: dto.email,
+                address: dto.address,
+            },
         });
     }
 
@@ -319,5 +332,10 @@ export class OrganizationsService {
                 'Organization already exists.',
             );
         }
+    }
+    private async generateOrganizationCode(): Promise<string> {
+        const count = await this.prisma.organization.count();
+
+        return `ORG${String(count + 1).padStart(5, '0')}`;
     }
 }
