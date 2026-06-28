@@ -416,23 +416,42 @@ model Account {
 }
 
 model CostCenter {
-  id             String    @id @default(cuid())
-  organizationId String
-  code           String
-  name           String
-  parentId       String?
-  isActive       Boolean   @default(true)
-  // FIX: اضافه شد
-  deletedAt      DateTime?
+  id String @id @default(cuid())
 
-  organization          Organization       @relation(fields: [organizationId], references: [id])
-  parent                CostCenter?        @relation("CostCenterTree", fields: [parentId], references: [id])
-  children              CostCenter[]       @relation("CostCenterTree")
-  journalLines          JournalEntryLine[]
-  // FIX: جایگزین Allocation قدیمی
+  organizationId String
+
+  code        String
+  name        String
+  description String?
+
+  parentId String?
+
+  level Int @default(1)
+
+  path String?
+
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  parent CostCenter? @relation("CostCenterTree", fields: [parentId], references: [id])
+
+  children CostCenter[] @relation("CostCenterTree")
+
+  journalLines JournalEntryLine[]
+
   allocationCostCenters Allocation[]
 
   @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([parentId])
+  @@index([isActive])
+  @@index([deletedAt])
 }
 
 model Project {

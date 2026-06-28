@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FxGainLossService } from './fx-gain-loss.service';
+import { FxGainLossService } from './services/fx-gain-loss.service';
 
 describe('FxGainLossService', () => {
   let service: FxGainLossService;

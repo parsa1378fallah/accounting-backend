@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FxGainLossController } from './fx-gain-loss.controller';
-import { FxGainLossService } from './fx-gain-loss.service';
+import { FxGainLossService } from './services/fx-gain-loss.service';
 
 describe('FxGainLossController', () => {
   let controller: FxGainLossController;
