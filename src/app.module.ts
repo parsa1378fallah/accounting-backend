@@ -42,6 +42,7 @@ import { AccountCategoryModule } from './accounting/account-category/account-cat
 import { SystemAccountModule } from './accounting/system-account/system-account.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { FxGainLossModule } from './accounting/fx-gain-loss/fx-gain-loss.module';
+import { CostCenterModule } from './accounting/cost-center/cost-center.module';
 
 
 
@@ -80,7 +81,8 @@ import { FxGainLossModule } from './accounting/fx-gain-loss/fx-gain-loss.module'
     , SystemAccountModule
     , JournalModule,
     EventEmitterModule.forRoot(),
-    FxGainLossModule,],
+    FxGainLossModule,
+    CostCenterModule,],
   controllers: [AppController],
   providers: [AppService
     , LoggingInterceptor],
