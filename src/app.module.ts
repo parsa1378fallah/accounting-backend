@@ -33,7 +33,7 @@ import { RequestContextModule } from './common/observability/request-context/req
 import { ObservabilityModule } from './common/observability/observability.module';
 import { ExchangeRatesModule } from './accounting/exchange-rates/exchange-rates.module';
 import { ChartOfAccountsModule } from './accounting/chart-of-accounts/chart-of-accounts.module';
-import { CostCentersModule } from './accounting/cost-centers/cost-centers.module';
+
 import { BankAccountsModule } from './accounting/bank-accounts/bank-accounts.module';
 import { CashboxesModule } from './accounting/cashboxes/cashboxes.module';
 import { AccountsModule } from './accounting/accounts/accounts.module';
@@ -43,6 +43,7 @@ import { SystemAccountModule } from './accounting/system-account/system-account.
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { FxGainLossModule } from './accounting/fx-gain-loss/fx-gain-loss.module';
 import { CostCenterModule } from './accounting/cost-center/cost-center.module';
+import { ProjectModule } from './accounting/project/project.module';
 
 
 
@@ -72,7 +73,6 @@ import { CostCenterModule } from './accounting/cost-center/cost-center.module';
     , ObservabilityModule
     , ExchangeRatesModule
     , ChartOfAccountsModule
-    , CostCentersModule
     , BankAccountsModule
     , CashboxesModule
     , AccountsModule
@@ -82,7 +82,8 @@ import { CostCenterModule } from './accounting/cost-center/cost-center.module';
     , JournalModule,
     EventEmitterModule.forRoot(),
     FxGainLossModule,
-    CostCenterModule,],
+    CostCenterModule,
+    ProjectModule,],
   controllers: [AppController],
   providers: [AppService
     , LoggingInterceptor],

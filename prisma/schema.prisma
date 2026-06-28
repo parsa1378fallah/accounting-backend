@@ -455,20 +455,19 @@ model CostCenter {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  organizationId String
-  code           String
-  name           String
-  status         ProjectStatus
-  startDate      DateTime?
-  endDate        DateTime?
-  budget         Decimal?      @db.Decimal(20, 4)
-  // FIX: اضافه شد
-  deletedAt      DateTime?
-
+  id                 String             @id @default(cuid())
+  organizationId     String
+  code               String
+  name               String
+  status             ProjectStatus
+  startDate          DateTime?
+  endDate            DateTime?
+  budget             Decimal?           @db.Decimal(20, 4)
+  deletedAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   organization       Organization       @relation(fields: [organizationId], references: [id])
   journalLines       JournalEntryLine[]
-  // FIX: جایگزین Allocation قدیمی
   allocationProjects Allocation[]
 
   @@unique([organizationId, code])
