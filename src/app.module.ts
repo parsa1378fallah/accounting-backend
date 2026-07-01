@@ -44,6 +44,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { FxGainLossModule } from './accounting/fx-gain-loss/fx-gain-loss.module';
 import { CostCenterModule } from './accounting/cost-center/cost-center.module';
 import { ProjectModule } from './accounting/project/project.module';
+import { AttachmentModule } from './attachment/attachment.module';
+import { InvoiceAttachmentModule } from './accounting/invoice-attachment/invoice-attachment.module';
 
 
 
@@ -83,7 +85,9 @@ import { ProjectModule } from './accounting/project/project.module';
     EventEmitterModule.forRoot(),
     FxGainLossModule,
     CostCenterModule,
-    ProjectModule,],
+    ProjectModule,
+    AttachmentModule,
+    InvoiceAttachmentModule,],
   controllers: [AppController],
   providers: [AppService
     , LoggingInterceptor],

@@ -574,17 +574,46 @@ model JournalEntryLine {
 }
 
 model Attachment {
-  id             String   @id @default(cuid())
-  organizationId String
-  fileName       String
-  mimeType       String
-  size           Int
-  path           String
-  createdAt      DateTime @default(now())
+  id String @id @default(cuid())
 
-  organization       Organization        @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  fileName     String
+  originalName String
+
+  extension String
+  mimeType  String
+
+  size Int
+
+  disk String? // local, minio, s3
+
+  path String
+
+  checksum String?
+
+  isPublic Boolean @default(false)
+
+  uploadedById String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   journalAttachments JournalAttachment[]
+
   invoiceAttachments InvoiceAttachment[]
+
+  downloadCount    Int       @default(0)
+  lastDownloadedAt DateTime?
+
+  @@index([organizationId])
+  @@index([mimeType])
+  @@index([extension])
+  @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model JournalAttachment {
@@ -597,15 +626,29 @@ model JournalAttachment {
   @@id([journalEntryId, attachmentId])
 }
 
-model InvoiceAttachment {
-  id           String @id @default(cuid())
-  attachmentId String
-  entityType   String
-  entityId     String
+enum AttachmentEntityType {
+  INVOICE
+  JOURNAL_ENTRY
+  CUSTOMER
+  VENDOR
+  PRODUCT
+  EXPENSE
+  PAYMENT
+}
 
-  attachment Attachment @relation(fields: [attachmentId], references: [id])
+model InvoiceAttachment {
+  id String @id @default(cuid())
+
+  attachmentId String
+  attachment   Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+
+  entityType AttachmentEntityType
+  entityId   String
+
+  createdAt DateTime @default(now())
 
   @@index([entityType, entityId])
+  @@index([attachmentId])
 }
 
 enum ApprovalStatus {

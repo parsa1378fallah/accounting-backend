@@ -1,0 +1,5 @@
+export * from './attachment-response.dto'
+export * from './create-attachment.dto'
+export * from './query-attachment.dto'
+export * from './update-attachment.dto'
+export * from './replace-attachments.dto'

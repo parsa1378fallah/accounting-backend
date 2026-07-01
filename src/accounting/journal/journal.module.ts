@@ -23,13 +23,18 @@ import { JournalNumberService } from './services/journal-number.service';
 import { JournalQueryService } from './services/journal-query.service';
 import { JournalValidationModule } from './validators/balance/journal-validation.module';
 import { JournalBalanceValidator } from './validators/domains/journal-balance.validator';
+import { JournalAttachmentsController } from './controllers/journal-attachments.controller';
+import { JournalAttachmentsRepository } from './repositories/journal-attachments.repository';
+import { JournalAttachmentsService } from './services/journal-attachments.service';
+import { AttachmentModule } from 'src/attachment/attachment.module';
 
 // import { JournalRepository } from './repositories/journal.repository';
 
 @Module({
     imports: [
         PrismaModule,
-        JournalValidationModule
+        JournalValidationModule,
+        AttachmentModule
     ],
 
     controllers: [
@@ -39,6 +44,7 @@ import { JournalBalanceValidator } from './validators/domains/journal-balance.va
         JournalApprovalController,
         JournalReversalController,
         JournalHistoryController,
+        JournalAttachmentsController
     ],
 
     providers: [
@@ -56,6 +62,8 @@ import { JournalBalanceValidator } from './validators/domains/journal-balance.va
         JournalNumberService,
         JournalQueryService,
         JournalBalanceValidator,
+        JournalAttachmentsRepository,
+        JournalAttachmentsService
     ],
 
     exports: [

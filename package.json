@@ -16,6 +16,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1076.0",
+    "@azure/storage-blob": "^12.33.0",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
@@ -43,6 +45,7 @@
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
+    "minio": "^8.0.7",
     "mysql2": "^3.22.5",
     "nanoid": "^5.1.11",
     "nest-winston": "^1.10.2",
@@ -53,8 +56,10 @@
     "redis": "^6.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "slugify": "^1.6.9",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
+    "ulid": "^3.0.2",
     "uuid": "^14.0.0",
     "winston": "^3.19.0"
   },
@@ -67,8 +72,9 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@types/bcrypt": "^6.0.0",
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "docker-compose": "^1.4.2",
