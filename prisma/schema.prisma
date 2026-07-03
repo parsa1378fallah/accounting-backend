@@ -67,6 +67,8 @@ model Organization {
   Role Role[]
 
   FxGainLossEntry FxGainLossEntry[]
+
+  FiscalYearClosing FiscalYearClosing[]
 }
 
 model Branch {
@@ -184,16 +186,24 @@ model User {
 
   organizationId String?
 
-  Organization       Organization?       @relation(fields: [organizationId], references: [id])
-  journalApprovals   JournalApproval[]
-  fiscalYearClosings FiscalYearClosing[]
-  notifications      Notification[]
-  sessions           UserSession[]
-  userRoles          UserRole[]
-  auditLogs          AuditLog[]
-  // NEW
-  workflowActions    WorkflowAction[]
-  reportSnapshots    ReportSnapshot[]    @relation("ReportGeneratedBy")
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  journalApprovals JournalApproval[]
+  notifications    Notification[]
+  sessions         UserSession[]
+  userRoles        UserRole[]
+  auditLogs        AuditLog[]
+  workflowActions  WorkflowAction[]
+  reportSnapshots  ReportSnapshot[]  @relation("ReportGeneratedBy")
+
+  closedFiscalYears   FiscalYearClosing[] @relation("ClosedFiscalYears")
+  reopenedFiscalYears FiscalYearClosing[] @relation("ReopenedFiscalYears")
+
+  FiscalYearClosing FiscalYearClosing[]
+
+  JournalTemplate JournalTemplate[]
+
+  RecurringJournal RecurringJournal[]
 }
 
 model UserRole {
@@ -262,6 +272,8 @@ model Currency {
   fxSourceEntries FxGainLossEntry[] @relation("FxSourceCurrency")
 
   fxBaseEntries FxGainLossEntry[] @relation("FxBaseCurrency")
+
+  JournalTemplateLine JournalTemplateLine[]
 }
 
 enum ExchangeRateStatus {
@@ -446,6 +458,7 @@ model CostCenter {
   journalLines JournalEntryLine[]
 
   allocationCostCenters Allocation[]
+  JournalTemplateLine   JournalTemplateLine[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -455,20 +468,21 @@ model CostCenter {
 }
 
 model Project {
-  id                 String             @id @default(cuid())
-  organizationId     String
-  code               String
-  name               String
-  status             ProjectStatus
-  startDate          DateTime?
-  endDate            DateTime?
-  budget             Decimal?           @db.Decimal(20, 4)
-  deletedAt          DateTime?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  organization       Organization       @relation(fields: [organizationId], references: [id])
-  journalLines       JournalEntryLine[]
-  allocationProjects Allocation[]
+  id                  String                @id @default(cuid())
+  organizationId      String
+  code                String
+  name                String
+  status              ProjectStatus
+  startDate           DateTime?
+  endDate             DateTime?
+  budget              Decimal?              @db.Decimal(20, 4)
+  deletedAt           DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  organization        Organization          @relation(fields: [organizationId], references: [id])
+  journalLines        JournalEntryLine[]
+  allocationProjects  Allocation[]
+  JournalTemplateLine JournalTemplateLine[]
 
   @@unique([organizationId, code])
 }
@@ -537,6 +551,7 @@ model JournalEntry {
   RecurringJournal  RecurringJournal[]  @relation("RecurringSource")
   StockTransfer     StockTransfer[]
   AssetDepreciation AssetDepreciation[]
+  FiscalYearClosing FiscalYearClosing[]
 
   @@unique([organizationId, entryNumber])
   @@index([organizationId, status])
@@ -719,19 +734,61 @@ model SystemAccount {
   @@unique([organizationId, key])
 }
 
+enum FiscalYearStatus {
+  OPEN
+  CLOSING
+  CLOSED
+}
+
+enum FiscalYearClosingStatus {
+  PROCESSING
+  COMPLETED
+  REOPENED
+  CANCELLED
+}
+
 model FiscalYearClosing {
-  id               String   @id @default(cuid())
-  organizationId   String
-  fiscalYearId     String
-  closedById       String?
-  closedAt         DateTime
-  retainedEarnings Decimal  @db.Decimal(20, 4)
-  notes            String?
+  id String @id @default(cuid())
+
+  organizationId String
+  fiscalYearId   String
+
+  closingNumber String
+
+  closingJournalEntryId String
+
+  retainedEarningsAmount Decimal @db.Decimal(20, 4)
+
+  status FiscalYearClosingStatus @default(COMPLETED)
+
+  closedById String
+  closedAt   DateTime
+
+  reopenedById   String?
+  reopenedAt     DateTime?
+  reopenedReason String?   @db.Text
+
+  notes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   fiscalYear FiscalYear @relation(fields: [fiscalYearId], references: [id])
-  closedBy   User?      @relation(fields: [closedById], references: [id])
+
+  closingJournalEntry JournalEntry @relation(fields: [closingJournalEntryId], references: [id])
+
+  closedBy User @relation("ClosedFiscalYears", fields: [closedById], references: [id])
+
+  reopenedBy User?  @relation("ReopenedFiscalYears", fields: [reopenedById], references: [id])
+  User       User[]
 
   @@unique([fiscalYearId])
+  @@unique([organizationId, closingNumber])
+  @@index([organizationId])
+  @@index([closedAt])
+  @@index([status])
 }
 
 enum JournalTemplateType {
@@ -750,19 +807,29 @@ model JournalTemplate {
   organizationId String
   name           String
   type           JournalTemplateType
+  description    String?             @db.Text
   isActive       Boolean             @default(true)
+  isSystem       Boolean             @default(false) // برای قالب‌های پیش‌فرض سیستم
+  createdById    String?
   createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  deletedAt      DateTime?
 
   organization      Organization          @relation(fields: [organizationId], references: [id])
+  createdBy         User?                 @relation(fields: [createdById], references: [id])
   lines             JournalTemplateLine[]
-  // NEW
   recurringJournals RecurringJournal[]
+
+  @@unique([organizationId, name]) // جلوگیری از تکرار نام
+  @@index([organizationId, type])
+  @@index([isActive])
 }
 
 enum TemplateAmountType {
   FIXED
   PERCENT
   DYNAMIC
+  LAST_AMOUNT
 }
 
 model JournalTemplateLine {
@@ -771,12 +838,24 @@ model JournalTemplateLine {
   accountId   String
   isDebit     Boolean
   amountType  TemplateAmountType
-  amount      Decimal?           @db.Decimal(20, 4)
+  amount      Decimal?           @db.Decimal(20, 4) // مقدار ثابت
+  percentage  Decimal?           @db.Decimal(8, 4) // درصد (جدید)
   description String?
   sortOrder   Int                @default(0)
 
-  template JournalTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  account  Account         @relation(fields: [accountId], references: [id])
+  // انعطاف بیشتر
+  costCenterId String?
+  projectId    String?
+  currencyId   String?
+
+  template   JournalTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  account    Account         @relation(fields: [accountId], references: [id])
+  costCenter CostCenter?     @relation(fields: [costCenterId], references: [id])
+  project    Project?        @relation(fields: [projectId], references: [id])
+  currency   Currency?       @relation(fields: [currencyId], references: [id])
+
+  @@index([templateId])
+  @@index([accountId])
 }
 
 // ================================================================
@@ -801,18 +880,21 @@ model RecurringJournal {
   endDate        DateTime?
   nextRunDate    DateTime
   lastRunDate    DateTime?
+  lastRunStatus  String? // SUCCESS / FAILED
   isActive       Boolean            @default(true)
-  amount         Decimal?           @db.Decimal(20, 4)
+  amount         Decimal?           @db.Decimal(20, 4) // مبلغ پایه (اختیاری)
   description    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdById    String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   organization     Organization    @relation(fields: [organizationId], references: [id])
   template         JournalTemplate @relation(fields: [templateId], references: [id])
+  createdBy        User?           @relation(fields: [createdById], references: [id])
   generatedEntries JournalEntry[]  @relation("RecurringSource")
 
   @@index([organizationId, nextRunDate])
+  @@index([organizationId, isActive])
 }
 
 // ================================================================

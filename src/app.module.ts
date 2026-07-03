@@ -46,6 +46,8 @@ import { CostCenterModule } from './accounting/cost-center/cost-center.module';
 import { ProjectModule } from './accounting/project/project.module';
 import { AttachmentModule } from './attachment/attachment.module';
 import { InvoiceAttachmentModule } from './accounting/invoice-attachment/invoice-attachment.module';
+import { FiscalYearClosingModule } from './accounting/fiscal-year-closing/fiscal-year-closing.module';
+import { JournalTemplateModule } from './accounting/journal-template/journal-template.module';
 
 
 
@@ -87,7 +89,9 @@ import { InvoiceAttachmentModule } from './accounting/invoice-attachment/invoice
     CostCenterModule,
     ProjectModule,
     AttachmentModule,
-    InvoiceAttachmentModule,],
+    InvoiceAttachmentModule,
+    FiscalYearClosingModule,
+    JournalTemplateModule,],
   controllers: [AppController],
   providers: [AppService
     , LoggingInterceptor],

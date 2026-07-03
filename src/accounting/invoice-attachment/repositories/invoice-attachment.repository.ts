@@ -1,457 +1,457 @@
-import { Injectable } from '@nestjs/common';
-import {
-    InvoiceAttachment,
-    Prisma,
-} from '@prisma/client';
+// import { Injectable } from '@nestjs/common';
+// import {
+//     InvoiceAttachment,
+//     Prisma,
+// } from '@prisma/client';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+// import { PrismaService } from 'src/prisma/prisma.service';
 
-@Injectable()
-export class InvoiceAttachmentRepository {
+// @Injectable()
+// export class InvoiceAttachmentRepository {
 
-    constructor(
-        private readonly prisma: PrismaService,
-    ) { }
+//     constructor(
+//         private readonly prisma: PrismaService,
+//     ) { }
 
-    //--------------------------------------------------
-    // Create
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Create
+//     //--------------------------------------------------
 
-    create(
-        data: Prisma.InvoiceAttachmentCreateInput,
-    ) {
-        return this.prisma.invoiceAttachment.create({
-            data,
-        });
-    }
+//     create(
+//         data: Prisma.InvoiceAttachmentCreateInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.create({
+//             data,
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Create Many
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Create Many
+//     //--------------------------------------------------
 
-    createMany(
-        data: Prisma.InvoiceAttachmentCreateManyInput[],
-    ) {
-        return this.prisma.invoiceAttachment.createMany({
-            data,
-        });
-    }
+//     createMany(
+//         data: Prisma.InvoiceAttachmentCreateManyInput[],
+//     ) {
+//         return this.prisma.invoiceAttachment.createMany({
+//             data,
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find By Id
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find By Id
+//     //--------------------------------------------------
 
-    findById(
-        id: string,
-    ) {
-        return this.prisma.invoiceAttachment.findUnique({
-            where: {
-                id,
-            },
-        });
-    }
+//     findById(
+//         id: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findUnique({
+//             where: {
+//                 id,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find By Id With Relations
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find By Id With Relations
+//     //--------------------------------------------------
 
-    findByIdWithRelations(
-        id: string,
-    ) {
-        return this.prisma.invoiceAttachment.findUnique({
-            where: {
-                id,
-            },
-            include: {
-                invoice: true,
-                attachment: true,
-            },
-        });
-    }
+//     findByIdWithRelations(
+//         id: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findUnique({
+//             where: {
+//                 id,
+//             },
+//             include: {
+//                 invoice: true,
+//                 attachment: true,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find First
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find First
+//     //--------------------------------------------------
 
-    findFirst(
-        where: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.findFirst({
-            where,
-        });
-    }
+//     findFirst(
+//         where: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.findFirst({
+//             where,
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find Many
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find Many
+//     //--------------------------------------------------
 
-    findMany(
-        where?: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where,
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+//     findMany(
+//         where?: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where,
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find Many With Relations
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find Many With Relations
+//     //--------------------------------------------------
 
-    findManyWithRelations(
-        where?: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where,
-            include: {
-                invoice: true,
-                attachment: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+//     findManyWithRelations(
+//         where?: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where,
+//             include: {
+//                 invoice: true,
+//                 attachment: true,
+//             },
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find By Invoice
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find By Invoice
+//     //--------------------------------------------------
 
-    findByInvoice(
-        invoiceId: string,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where: {
-                invoiceId,
-                deletedAt: null,
-            },
-            include: {
-                attachment: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+//     findByInvoice(
+//         invoiceId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where: {
+//                 invoiceId,
+//                 deletedAt: null,
+//             },
+//             include: {
+//                 attachment: true,
+//             },
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find By Attachment
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find By Attachment
+//     //--------------------------------------------------
 
-    findByAttachment(
-        attachmentId: string,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where: {
-                attachmentId,
-                deletedAt: null,
-            },
-            include: {
-                invoice: true,
-            },
-        });
-    }
+//     findByAttachment(
+//         attachmentId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where: {
+//                 attachmentId,
+//                 deletedAt: null,
+//             },
+//             include: {
+//                 invoice: true,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Exists
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Exists
+//     //--------------------------------------------------
 
-    async exists(
-        where: Prisma.InvoiceAttachmentWhereInput,
-    ): Promise<boolean> {
+//     async exists(
+//         where: Prisma.InvoiceAttachmentWhereInput,
+//     ): Promise<boolean> {
 
-        const count =
-            await this.prisma.invoiceAttachment.count({
-                where,
-            });
+//         const count =
+//             await this.prisma.invoiceAttachment.count({
+//                 where,
+//             });
 
-        return count > 0;
-    }
+//         return count > 0;
+//     }
 
-    //--------------------------------------------------
-    // Update
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Update
+//     //--------------------------------------------------
 
-    update(
-        id: string,
-        data: Prisma.InvoiceAttachmentUpdateInput,
-    ) {
-        return this.prisma.invoiceAttachment.update({
-            where: {
-                id,
-            },
-            data,
-        });
-    }
+//     update(
+//         id: string,
+//         data: Prisma.InvoiceAttachmentUpdateInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.update({
+//             where: {
+//                 id,
+//             },
+//             data,
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Soft Delete
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Soft Delete
+//     //--------------------------------------------------
 
-    delete(
-        id: string,
-    ) {
-        return this.prisma.invoiceAttachment.update({
-            where: {
-                id,
-            },
-            data: {
-                deletedAt: new Date(),
-            },
-        });
-    }
+//     delete(
+//         id: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.update({
+//             where: {
+//                 id,
+//             },
+//             data: {
+//                 deletedAt: new Date(),
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Delete Many
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Delete Many
+//     //--------------------------------------------------
 
-    deleteMany(
-        where: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.updateMany({
-            where,
-            data: {
-                deletedAt: new Date(),
-            },
-        });
-    }
+//     deleteMany(
+//         where: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.updateMany({
+//             where,
+//             data: {
+//                 deletedAt: new Date(),
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Restore
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Restore
+//     //--------------------------------------------------
 
-    restore(
-        id: string,
-    ) {
-        return this.prisma.invoiceAttachment.update({
-            where: {
-                id,
-            },
-            data: {
-                deletedAt: null,
-            },
-        });
-    }
+//     restore(
+//         id: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.update({
+//             where: {
+//                 id,
+//             },
+//             data: {
+//                 deletedAt: null,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Force Delete
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Force Delete
+//     //--------------------------------------------------
 
-    forceDelete(
-        id: string,
-    ) {
-        return this.prisma.invoiceAttachment.delete({
-            where: {
-                id,
-            },
-        });
-    }
+//     forceDelete(
+//         id: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.delete({
+//             where: {
+//                 id,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Force Delete Many
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Force Delete Many
+//     //--------------------------------------------------
 
-    forceDeleteMany(
-        where: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.deleteMany({
-            where,
-        });
-    }
+//     forceDeleteMany(
+//         where: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.deleteMany({
+//             where,
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Count
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Count
+//     //--------------------------------------------------
 
-    count(
-        where?: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.count({
-            where,
-        });
-    }
-    //--------------------------------------------------
-    // Find Active By Invoice
-    //--------------------------------------------------
+//     count(
+//         where?: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.count({
+//             where,
+//         });
+//     }
+//     //--------------------------------------------------
+//     // Find Active By Invoice
+//     //--------------------------------------------------
 
-    findActiveByInvoice(
-        invoiceId: string,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where: {
-                invoiceId,
-                deletedAt: null,
-            },
-            include: {
-                attachment: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+//     findActiveByInvoice(
+//         invoiceId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where: {
+//                 invoiceId,
+//                 deletedAt: null,
+//             },
+//             include: {
+//                 attachment: true,
+//             },
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find Deleted By Invoice
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find Deleted By Invoice
+//     //--------------------------------------------------
 
-    findDeletedByInvoice(
-        invoiceId: string,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where: {
-                invoiceId,
-                deletedAt: {
-                    not: null,
-                },
-            },
-            include: {
-                attachment: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+//     findDeletedByInvoice(
+//         invoiceId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where: {
+//                 invoiceId,
+//                 deletedAt: {
+//                     not: null,
+//                 },
+//             },
+//             include: {
+//                 attachment: true,
+//             },
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find By Invoice With Relations
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find By Invoice With Relations
+//     //--------------------------------------------------
 
-    findByInvoiceWithRelations(
-        invoiceId: string,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where: {
-                invoiceId,
-            },
-            include: {
-                invoice: true,
-                attachment: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
+//     findByInvoiceWithRelations(
+//         invoiceId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where: {
+//                 invoiceId,
+//             },
+//             include: {
+//                 invoice: true,
+//                 attachment: true,
+//             },
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Find By Attachment With Relations
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Find By Attachment With Relations
+//     //--------------------------------------------------
 
-    findByAttachmentWithRelations(
-        attachmentId: string,
-    ) {
-        return this.prisma.invoiceAttachment.findMany({
-            where: {
-                attachmentId,
-            },
-            include: {
-                invoice: true,
-                attachment: true,
-            },
-        });
-    }
+//     findByAttachmentWithRelations(
+//         attachmentId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.findMany({
+//             where: {
+//                 attachmentId,
+//             },
+//             include: {
+//                 invoice: true,
+//                 attachment: true,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Restore Many
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Restore Many
+//     //--------------------------------------------------
 
-    restoreMany(
-        where: Prisma.InvoiceAttachmentWhereInput,
-    ) {
-        return this.prisma.invoiceAttachment.updateMany({
-            where,
-            data: {
-                deletedAt: null,
-            },
-        });
-    }
+//     restoreMany(
+//         where: Prisma.InvoiceAttachmentWhereInput,
+//     ) {
+//         return this.prisma.invoiceAttachment.updateMany({
+//             where,
+//             data: {
+//                 deletedAt: null,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Exists By Invoice And Attachment
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Exists By Invoice And Attachment
+//     //--------------------------------------------------
 
-    async existsByInvoiceAndAttachment(
-        invoiceId: string,
-        attachmentId: string,
-    ): Promise<boolean> {
+//     async existsByInvoiceAndAttachment(
+//         invoiceId: string,
+//         attachmentId: string,
+//     ): Promise<boolean> {
 
-        const count =
-            await this.prisma.invoiceAttachment.count({
-                where: {
-                    invoiceId,
-                    attachmentId,
-                    deletedAt: null,
-                },
-            });
+//         const count =
+//             await this.prisma.invoiceAttachment.count({
+//                 where: {
+//                     invoiceId,
+//                     attachmentId,
+//                     deletedAt: null,
+//                 },
+//             });
 
-        return count > 0;
-    }
+//         return count > 0;
+//     }
 
-    //--------------------------------------------------
-    // Attach Exists
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Attach Exists
+//     //--------------------------------------------------
 
-    attachExists(
-        invoiceId: string,
-        attachmentId: string,
-    ) {
-        return this.findFirst({
-            invoiceId,
-            attachmentId,
-            deletedAt: null,
-        });
-    }
+//     attachExists(
+//         invoiceId: string,
+//         attachmentId: string,
+//     ) {
+//         return this.findFirst({
+//             invoiceId,
+//             attachmentId,
+//             deletedAt: null,
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Detach All
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Detach All
+//     //--------------------------------------------------
 
-    detachAll(
-        invoiceId: string,
-    ) {
-        return this.prisma.invoiceAttachment.updateMany({
-            where: {
-                invoiceId,
-                deletedAt: null,
-            },
-            data: {
-                deletedAt: new Date(),
-            },
-        });
-    }
+//     detachAll(
+//         invoiceId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.updateMany({
+//             where: {
+//                 invoiceId,
+//                 deletedAt: null,
+//             },
+//             data: {
+//                 deletedAt: new Date(),
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Count By Invoice
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Count By Invoice
+//     //--------------------------------------------------
 
-    countByInvoice(
-        invoiceId: string,
-    ) {
-        return this.prisma.invoiceAttachment.count({
-            where: {
-                invoiceId,
-                deletedAt: null,
-            },
-        });
-    }
+//     countByInvoice(
+//         invoiceId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.count({
+//             where: {
+//                 invoiceId,
+//                 deletedAt: null,
+//             },
+//         });
+//     }
 
-    //--------------------------------------------------
-    // Count By Attachment
-    //--------------------------------------------------
+//     //--------------------------------------------------
+//     // Count By Attachment
+//     //--------------------------------------------------
 
-    countByAttachment(
-        attachmentId: string,
-    ) {
-        return this.prisma.invoiceAttachment.count({
-            where: {
-                attachmentId,
-                deletedAt: null,
-            },
-        });
-    }
+//     countByAttachment(
+//         attachmentId: string,
+//     ) {
+//         return this.prisma.invoiceAttachment.count({
+//             where: {
+//                 attachmentId,
+//                 deletedAt: null,
+//             },
+//         });
+//     }
 
-}
+// }

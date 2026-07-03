@@ -28,6 +28,8 @@ export enum JournalReferenceType {
     ADJUSTMENT = 'ADJUSTMENT',
     OPENING = 'OPENING',
     CLOSING = 'CLOSING',
+    JOURNAL_TEMPLATE = 'JOURNAL_TEMPLATE',
+    RECURRING_JOURNAL = 'RECURRING_JOURNAL',
 }
 
 export class CreateJournalEntryDto {
