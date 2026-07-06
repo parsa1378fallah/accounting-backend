@@ -32,6 +32,7 @@ export class JournalTemplateRepository {
             if (dto.lines?.length) {
                 await tx.journalTemplateLine.createMany({
                     data: dto.lines.map((line, index) => ({
+                        organizationId,
                         templateId: template.id,
                         accountId: line.accountId,
                         isDebit: line.isDebit,
@@ -137,6 +138,7 @@ export class JournalTemplateRepository {
                 if (dto.lines.length > 0) {
                     await tx.journalTemplateLine.createMany({
                         data: dto.lines.map((line, index) => ({
+                            organizationId,
                             templateId: id,
                             accountId: line.accountId,
                             isDebit: line.isDebit,

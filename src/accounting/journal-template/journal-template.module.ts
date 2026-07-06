@@ -12,8 +12,8 @@ import { RecurringJournalService } from './services/recurring-journal.service';
 
 import { JournalTemplateRepository } from './repositories/journal-template.repository';
 import { TemplateBalanceValidator } from './validators/template-balance.validator';
-import { AmountCalculationStrategyFactory } from './strategies/amount-calculation.strategy';
-import { RecurringFrequencyStrategyFactory } from './strategies/recurring-frequency.strategy';
+import { AmountCalculationStrategyFactory, DynamicAmountStrategy, FixedAmountStrategy, LastAmountStrategy, PercentageAmountStrategy } from './strategies/amount-calculation.strategy';
+import { DailyRecurringStrategy, EveryBusinessDayStrategy, MonthlyRecurringStrategy, QuarterlyRecurringStrategy, RecurringFrequencyStrategyFactory, WeeklyRecurringStrategy, YearlyRecurringStrategy } from './strategies/recurring-frequency.strategy';
 
 import { JournalModule } from '../journal/journal.module';
 import { FiscalYearModule } from 'src/fiscal-year/fiscal-year.module';
@@ -27,9 +27,9 @@ import { RecurringJournalProcessor } from './jobs/recurring-journal.processor';
     EventEmitterModule,
 
     // Queue برای اجرای اسناد تکراری
-    BullModule.registerQueue({
-      name: RECURRING_JOURNAL_QUEUE,
-    }),
+    // BullModule.registerQueue({
+    //   name: RECURRING_JOURNAL_QUEUE,
+    // }),
 
     // ماژول‌های وابسته
     forwardRef(() => JournalModule),
@@ -58,6 +58,16 @@ import { RecurringJournalProcessor } from './jobs/recurring-journal.processor';
 
     // Jobs (BullMQ)
     RecurringJournalProcessor,
+    FixedAmountStrategy,
+    PercentageAmountStrategy,
+    LastAmountStrategy,
+    DynamicAmountStrategy,
+    DailyRecurringStrategy,
+    WeeklyRecurringStrategy,
+    MonthlyRecurringStrategy,
+    QuarterlyRecurringStrategy,
+    YearlyRecurringStrategy,
+    EveryBusinessDayStrategy
   ],
 
   exports: [

@@ -1,38 +1,84 @@
-// src/modules/accounting/journal-template/dto/journal-template-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { JournalTemplateType } from '@prisma/client';
+import { TemplateAmountType } from 'src/accounting/journal-template-line/common/enums/template-amount-type.enum';
 
 export class JournalTemplateLineResponseDto {
+    @ApiProperty()
     id: string;
+
+    @ApiProperty()
+    templateId: string;
+
+    @ApiProperty()
     accountId: string;
-    accountName: string;
+
+    @ApiProperty({ required: false })
+    accountName?: string;
+
+    @ApiProperty({ required: false })
+    costCenterId?: string;
+
+    @ApiProperty({ required: false })
+    costCenterName?: string;
+
+    @ApiProperty({ required: false })
+    projectId?: string;
+
+    @ApiProperty({ required: false })
+    projectName?: string;
+
+    @ApiProperty({ required: false })
+    currencyId?: string;
+
+    @ApiProperty({ required: false })
+    currencyCode?: string;
+
+    @ApiProperty()
+    organizationId: string;
+
+    @ApiProperty()
     isDebit: boolean;
-    amountType: string;
+
+    @ApiProperty({
+        enum: TemplateAmountType,
+    })
+    amountType: TemplateAmountType;
+
+    @ApiProperty({
+        required: false,
+    })
     amount?: number;
-    percentage?: number;
+
+    @ApiProperty({
+        required: false,
+    })
+    percentage?: string;
+
+    @ApiProperty({
+        required: false,
+    })
+    formula?: {
+        expression: string;
+    };
+
+    @ApiProperty({
+        required: false,
+    })
     description?: string;
+
+    @ApiProperty()
     sortOrder: number;
-}
-
-export class JournalTemplateResponseDto {
-    @ApiProperty()
-    id: string;
 
     @ApiProperty()
-    name: string;
-
-    @ApiProperty({ enum: JournalTemplateType })
-    type: JournalTemplateType;
-
-    @ApiProperty()
-    description?: string;
-
-    @ApiProperty()
-    isActive: boolean;
-
-    @ApiProperty({ type: [JournalTemplateLineResponseDto] })
-    lines: JournalTemplateLineResponseDto[];
-
     createdAt: Date;
+
+    @ApiProperty()
     updatedAt: Date;
+
+    @ApiProperty({
+        required: false,
+    })
+    deletedAt?: Date;
+
+    @ApiProperty()
+    version: number;
 }

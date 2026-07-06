@@ -7,7 +7,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 @Module({
   controllers: [FiscalYearController],
   providers: [FiscalYearService, PrismaService],
-  exports: [PrismaService],
+  exports: [PrismaService, FiscalYearService],
   imports: [PrismaModule]
 })
 export class FiscalYearModule { }

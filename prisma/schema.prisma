@@ -830,23 +830,34 @@ enum TemplateAmountType {
   PERCENT
   DYNAMIC
   LAST_AMOUNT
+  FORMULA
 }
 
 model JournalTemplateLine {
-  id          String             @id @default(cuid())
-  templateId  String
-  accountId   String
-  isDebit     Boolean
-  amountType  TemplateAmountType
-  amount      Decimal?           @db.Decimal(20, 4) // مقدار ثابت
-  percentage  Decimal?           @db.Decimal(8, 4) // درصد (جدید)
-  description String?
-  sortOrder   Int                @default(0)
+  id String @id @default(cuid())
 
-  // انعطاف بیشتر
+  organizationId String
+
+  templateId String
+  accountId  String
+  isDebit    Boolean
+  amountType TemplateAmountType
+
+  amount     Decimal? @db.Decimal(20, 4)
+  percentage Decimal? @db.Decimal(8, 4)
+
+  formula Json? // FIXED: safer than string
+
+  description String?
+  sortOrder   Int     @default(0)
+
   costCenterId String?
   projectId    String?
   currencyId   String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   template   JournalTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   account    Account         @relation(fields: [accountId], references: [id])
@@ -854,7 +865,8 @@ model JournalTemplateLine {
   project    Project?        @relation(fields: [projectId], references: [id])
   currency   Currency?       @relation(fields: [currencyId], references: [id])
 
-  @@index([templateId])
+  @@index([organizationId, templateId])
+  @@index([templateId, sortOrder])
   @@index([accountId])
 }
 
