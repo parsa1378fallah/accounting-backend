@@ -48,7 +48,6 @@ import { AttachmentModule } from './attachment/attachment.module';
 import { InvoiceAttachmentModule } from './accounting/invoice-attachment/invoice-attachment.module';
 import { FiscalYearClosingModule } from './accounting/fiscal-year-closing/fiscal-year-closing.module';
 import { JournalTemplateModule } from './accounting/journal-template/journal-template.module';
-import { JournalTemplateLineModule } from './accounting/journal-template-line/journal-template-line.module';
 
 
 
@@ -92,8 +91,7 @@ import { JournalTemplateLineModule } from './accounting/journal-template-line/jo
     AttachmentModule,
     InvoiceAttachmentModule,
     FiscalYearClosingModule,
-    JournalTemplateModule,
-    JournalTemplateLineModule,],
+    JournalTemplateModule],
   controllers: [AppController],
   providers: [AppService
     , LoggingInterceptor],
