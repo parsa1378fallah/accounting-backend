@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TemplateAmountType } from 'src/accounting/journal-template-line/common/enums/template-amount-type.enum';
+import { TemplateAmountType } from '@prisma/client'
 
 export class JournalTemplateLineResponseDto {
     @ApiProperty()
